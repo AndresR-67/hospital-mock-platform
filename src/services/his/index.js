@@ -31,4 +31,16 @@ router.post('/events/:name', (req, res) => {
 // ---- Health ----
 router.get('/health', (_, res) => res.json({ status: 'ok', service: 'HIS' }));
 
+// GET /his/performance
+router.get('/performance', (_, res) => {
+  const performanceData = {
+    uptime: 99.5,          // Porcentaje de disponibilidad del sistema
+    errors: 2,             // Número de errores críticos registrados
+    avg_response: 120,     // Tiempo promedio de respuesta en milisegundos
+    transactions: 5400     // Número de transacciones procesadas
+  };
+  res.json(performanceData);
+});
+
+
 module.exports = router;

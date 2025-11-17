@@ -1,0 +1,32 @@
+{
+  "name": "hospital-mock-platform",
+  "version": "1.0.0",
+  "description": "Plataforma mock para HIS, ERP, PACS, LIS, seguridad, interoperabilidad y monitoreo para n8n.",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "migrate": "node migrate.js",
+    "seed": "node src/db/seed.js",
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": [
+    "mock",
+    "hospital",
+    "n8n",
+    "interoperabilidad",
+    "hl7",
+    "fhir",
+    "pacs",
+    "his",
+    "erp"
+  ],
+  "author": "andy",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.11.3",
+    "dotenv": "^16.4.5",
+    "cors": "^2.8.5"
+  }
+}

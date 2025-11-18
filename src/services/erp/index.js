@@ -23,4 +23,17 @@ router.get('/proveedores', (_, res) => res.json(proveedores));
 router.post('/events/:type', (_, res) => res.json({ok: true}));
 router.get('/health', (_, res) => res.json({status: 'ok', service: 'ERP'}));
 
+
+
+// GET /erp/performance
+router.get('/performance', (_, res) => {
+  const performanceData = {
+    uptime: 99.2,
+    errors: 0,
+    avg_response: 250,
+    transactions: 4100
+  };
+  res.json(performanceData);
+});
+
 module.exports = router;

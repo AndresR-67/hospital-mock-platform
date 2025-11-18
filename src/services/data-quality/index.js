@@ -1,7 +1,16 @@
 const express = require('express');
 const router = express.Router();
 
-// ---- Función genérica para generar alertas ----
+// -------------------- Helper Random --------------------
+function random(min, max, decimals = 1) {
+  return parseFloat((Math.random() * (max - min) + min).toFixed(decimals));
+}
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// -------------------- Evaluación de Alertas --------------------
 function evaluateQuality(data) {
   const alerts = [];
 
@@ -24,68 +33,53 @@ function evaluateQuality(data) {
   return alerts;
 }
 
-// ---- HIS ----
+// -------------------- Generador de Data --------------------
+function generateQualityProfile(profile = "default") {
+
+  // perfiles para hacer los datos más realistas
+  const profiles = {
+    his: { c: [96, 99], a: [93, 97], d: [1, 3], t: [90, 97], i: [0, 4] },
+    erp: { c: [98, 100], a: [96, 99], d: [0.5, 2], t: [95, 99], i: [0, 2] },
+    lab: { c: [95, 98], a: [90, 95], d: [1.5, 3], t: [92, 97], i: [0, 3] },
+    pacs: { c: [97, 99], a: [94, 97], d: [1, 2.5], t: [93, 97], i: [0, 3] },
+    default: { c: [95, 99], a: [90, 98], d: [1, 3], t: [90, 99], i: [0, 5] }
+  };
+
+  const p = profiles[profile] || profiles.default;
+
+  return {
+    completeness: random(p.c[0], p.c[1]),
+    accuracy: random(p.a[0], p.a[1]),
+    duplication_rate: random(p.d[0], p.d[1]),
+    timeliness: random(p.t[0], p.t[1]),
+    integrity_issues: randomInt(p.i[0], p.i[1])
+  };
+}
+
+// -------------------- Endpoints Automáticos --------------------
+
+// HIS
 router.get('/his', (_, res) => {
-  const data = {
-    completeness: 97.5,
-    accuracy: 94.2,
-    duplication_rate: 1.8,
-    timeliness: 92.1,
-    integrity_issues: 3
-  };
-
-  res.json({
-    ...data,
-    alerts: evaluateQuality(data)
-  });
+  const data = generateQualityProfile("his");
+  res.json({ ...data, alerts: evaluateQuality(data) });
 });
 
-// ---- ERP ----
+// ERP
 router.get('/erp', (_, res) => {
-  const data = {
-    completeness: 99.1,
-    accuracy: 97.5,
-    duplication_rate: 0.9,
-    timeliness: 96.2,
-    integrity_issues: 0
-  };
-
-  res.json({
-    ...data,
-    alerts: evaluateQuality(data)
-  });
+  const data = generateQualityProfile("erp");
+  res.json({ ...data, alerts: evaluateQuality(data) });
 });
 
-// ---- Laboratorio ----
+// Laboratorio
 router.get('/lab', (_, res) => {
-  const data = {
-    completeness: 96.4,
-    accuracy: 91.8,
-    duplication_rate: 2.4,
-    timeliness: 94.1,
-    integrity_issues: 1
-  };
-
-  res.json({
-    ...data,
-    alerts: evaluateQuality(data)
-  });
+  const data = generateQualityProfile("lab");
+  res.json({ ...data, alerts: evaluateQuality(data) });
 });
 
-// ---- PACS ----
+// PACS
 router.get('/pacs', (_, res) => {
-  const data = {
-    completeness: 98.5,
-    accuracy: 95.0,
-    duplication_rate: 1.2,
-    timeliness: 93.3,
-    integrity_issues: 2
-  };
-
-  res.json({
-    ...data,
-    alerts: evaluateQuality(data)
-  });
+  const data = generateQualityProfile("pacs");
+  res.json({ ...data, alerts: evaluateQuality(data) });
 });
 
 // Health

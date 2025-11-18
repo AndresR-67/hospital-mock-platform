@@ -9,7 +9,16 @@ const resultados = [
 const alertas = [
   {examen: "Potasio", nivel: "Crítico"},
   {examen: "Creatinina", nivel: "Alto"}
+
 ];
+
+function rand(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randFloat(min, max) {
+  return (Math.random() * (max - min) + min).toFixed(2);
+}
 
 router.get('/resultados', (_, res) => res.json(resultados));
 router.get('/alertas', (_, res) => res.json(alertas));
@@ -19,10 +28,10 @@ router.get('/health', (_, res) => res.json({status: 'ok', service: 'LAB'}));
 
 router.get('/performance', (_, res) => {
   const performanceData = {
-    uptime: 97.5,
-    errors: 3,
-    avg_response: 400,
-    transactions: 2700
+    uptime: parseFloat(randFloat(95.0, 98.5)),
+    errors: rand(0, 5),
+    avg_response: rand(300, 700),
+    transactions: rand(2000, 3500)
   };
   res.json(performanceData);
 });

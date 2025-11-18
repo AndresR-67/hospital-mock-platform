@@ -1,6 +1,14 @@
 const express = require('express');
 const router = express.Router();
 
+function rand(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randFloat(min, max) {
+  return (Math.random() * (max - min) + min).toFixed(2);
+}
+
 // ---- Datos falsos ----
 const pacientes = [
   { id: 1, nombre: "Juan Pérez", edad: 34, ingreso: "2025-01-10" },
@@ -34,13 +42,12 @@ router.get('/health', (_, res) => res.json({ status: 'ok', service: 'HIS' }));
 // GET /his/performance
 router.get('/performance', (_, res) => {
   const performanceData = {
-    uptime: 99.5,          // Porcentaje de disponibilidad del sistema
-    errors: 2,             // Número de errores críticos registrados
-    avg_response: 120,     // Tiempo promedio de respuesta en milisegundos
-    transactions: 5400     // Número de transacciones procesadas
+    uptime: parseFloat(randFloat(98.5, 99.9)),
+    errors: rand(0, 3),
+    avg_response: rand(90, 300),
+    transactions: rand(4000, 7000)
   };
   res.json(performanceData);
 });
-
 
 module.exports = router;

@@ -1,6 +1,15 @@
 const express = require('express');
 const router = express.Router();
 
+function rand(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randFloat(min, max) {
+  return (Math.random() * (max - min) + min).toFixed(2);
+}
+
+
 const costos = [
   {area: "Farmacia", mensual: 34000000},
   {area: "Imagenología", mensual: 56400000}
@@ -25,15 +34,15 @@ router.get('/health', (_, res) => res.json({status: 'ok', service: 'ERP'}));
 
 
 
-// GET /erp/performance
 router.get('/performance', (_, res) => {
   const performanceData = {
-    uptime: 99.2,
-    errors: 0,
-    avg_response: 250,
-    transactions: 4100
+    uptime: parseFloat(randFloat(97.0, 99.5)),
+    errors: rand(0, 2),
+    avg_response: rand(200, 500),
+    transactions: rand(3000, 5000)
   };
   res.json(performanceData);
 });
+
 
 module.exports = router;

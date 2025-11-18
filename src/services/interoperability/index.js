@@ -1,36 +1,65 @@
 const express = require('express');
 const router = express.Router();
 
-// --- HL7 mock ---
-const hl7 = [
-  "MSH|^~\\&|HIS|HOSP|LAB|HOSP|20250101||ORU^R01|1234|P|2.3",
-  "PID|1||12345678||PEREZ^JUAN||19800101|M"
-];
+// Importar los status de cada servicio
+const hisService = require('../his/status');
+const erpService = require('../erp/status');
+const labService = require('../laboratorio/status');
+const pacsService = require('../pacs/status');
 
-// --- FHIR mock ---
-const patient = {
-  resourceType: "Patient",
-  id: "123",
-  name: [{given: ["Juan"], family: "Pérez"}]
-};
+// Función genérica para consultar interoperabilidad
+async function checkIntegration(systemA, systemB) {
+  const data = await systemA.getIntegrationStatus(systemB.name);
+  return {
+    with: systemB.name,
+    success_rate: data.success_rate,
+    errors: data.errors,
+    avg_response: data.avg_response
+  };
+}
 
-const observation = {
-  resourceType: "Observation",
-  id: "obs1",
-  valueString: "Normal"
-};
-
-router.get('/hl7', (_, res) => res.json(hl7));
-router.get('/fhir/patient', (_, res) => res.json(patient));
-router.get('/fhir/observation', (_, res) => res.json(observation));
-
-// Gateway que solo reenvía (fake)
-router.get('/gateway/:service', (req, res) => {
-  res.json({gateway: true, target: req.params.service});
+// Endpoint HIS
+router.get('/checks/his', async (_, res) => {
+  res.json({
+    integrations: [
+      await checkIntegration(hisService, erpService),
+      await checkIntegration(hisService, labService),
+      await checkIntegration(hisService, pacsService)
+    ]
+  });
 });
 
-router.post('/events/:type', (_, res) => res.json({ok: true}));
+// Endpoint ERP
+router.get('/checks/erp', async (_, res) => {
+  res.json({
+    integrations: [
+      await checkIntegration(erpService, hisService),
+      await checkIntegration(erpService, labService),
+      await checkIntegration(erpService, pacsService)
+    ]
+  });
+});
 
-router.get('/health', (_, res) => res.json({status: 'ok', service: 'INTEROP'}));
+// Endpoint Laboratorio
+router.get('/checks/lab', async (_, res) => {
+  res.json({
+    integrations: [
+      await checkIntegration(labService, hisService),
+      await checkIntegration(labService, erpService),
+      await checkIntegration(labService, pacsService)
+    ]
+  });
+});
+
+// Endpoint PACS
+router.get('/checks/pacs', async (_, res) => {
+  res.json({
+    integrations: [
+      await checkIntegration(pacsService, hisService),
+      await checkIntegration(pacsService, erpService),
+      await checkIntegration(pacsService, labService)
+    ]
+  });
+});
 
 module.exports = router;

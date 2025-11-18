@@ -1,11 +1,24 @@
 module.exports = {
   name: "Laboratorio",
+
   getIntegrationStatus: async (systemName) => {
+
+    const randomStatus = () => ({
+      success_rate: Math.floor(Math.random() * (100 - 92 + 1)) + 92,
+      errors: Math.floor(Math.random() * 5),
+      avg_response: Math.floor(Math.random() * (300 - 150 + 1)) + 150
+    });
+
     const mockData = {
-      "HIS": { success_rate: 98, errors: 2, avg_response: 190 },
-      "ERP": { success_rate: 97, errors: 3, avg_response: 200 },
-      "PACS": { success_rate: 96, errors: 4, avg_response: 210 }
+      "HIS": randomStatus(),
+      "ERP": randomStatus(),
+      "PACS": randomStatus()
     };
-    return mockData[systemName] || { success_rate: 0, errors: 0, avg_response: 0 };
+
+    return mockData[systemName] || {
+      success_rate: 0,
+      errors: 0,
+      avg_response: 0
+    };
   }
 };

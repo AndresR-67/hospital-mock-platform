@@ -1,104 +1,40 @@
 const express = require('express');
 const router = express.Router();
 
-// ---- Función genérica para evaluar umbrales ----
-function evaluateInfra(data) {
-  const alerts = [];
+// Funciones utilitarias para randoms
+const rand = (min, max) => Math.random() * (max - min) + min;
+const randInt = (min, max) => Math.floor(rand(min, max));
 
-  if (data.cpu_usage > 85) alerts.push(`CPU alta: ${data.cpu_usage}%`);
-  if (data.ram_usage > 85) alerts.push(`RAM alta: ${data.ram_usage}%`);
-  if (data.disk_usage > 90) alerts.push(`Disco al límite: ${data.disk_usage}%`);
-  if (data.uptime < 99) alerts.push(`Uptime bajo: ${data.uptime}%`);
-  if (data.latency > 400) alerts.push(`Latencia elevada: ${data.latency}ms`);
-  if (data.incident_count > 0) alerts.push(`${data.incident_count} incidentes detectados`);
-  if (data.backup_status !== "OK") alerts.push(`Backup en estado ${data.backup_status}`);
+const backupStates = ["OK", "WARNING", "FAILED"];
 
-  return alerts;
-}
+const generateInfraData = () => ({
+  cpu_usage: randInt(40, 95),      // %
+  ram_usage: randInt(35, 95),      // %
+  disk_usage: randInt(50, 97),     // %
+  uptime: Number(rand(97.5, 99.9).toFixed(2)), // %
+  latency: randInt(80, 600),       // ms
+  incident_count: randInt(0, 5),   // #
+  backup_status: backupStates[randInt(0, backupStates.length)]
+});
 
-// -------------------------
-// HIS
-// -------------------------
+// ---------------------------
+// 4 ENDPOINTS
+// ---------------------------
+
 router.get('/his', (_, res) => {
-  const data = {
-    cpu_usage: 72,
-    ram_usage: 68,
-    disk_usage: 81,
-    uptime: 99.2,
-    latency: 180,
-    incident_count: 2,
-    backup_status: "OK"
-  };
-
-  res.json({
-    ...data,
-    alerts: evaluateInfra(data)
-  });
+  res.json(generateInfraData());
 });
 
-// -------------------------
-// ERP
-// -------------------------
 router.get('/erp', (_, res) => {
-  const data = {
-    cpu_usage: 88,
-    ram_usage: 91,
-    disk_usage: 77,
-    uptime: 97.5,
-    latency: 420,
-    incident_count: 1,
-    backup_status: "WARNING"
-  };
-
-  res.json({
-    ...data,
-    alerts: evaluateInfra(data)
-  });
+  res.json(generateInfraData());
 });
 
-// -------------------------
-// Laboratorio
-// -------------------------
 router.get('/lab', (_, res) => {
-  const data = {
-    cpu_usage: 64,
-    ram_usage: 59,
-    disk_usage: 83,
-    uptime: 99.7,
-    latency: 150,
-    incident_count: 0,
-    backup_status: "OK"
-  };
-
-  res.json({
-    ...data,
-    alerts: evaluateInfra(data)
-  });
+  res.json(generateInfraData());
 });
 
-// -------------------------
-// PACS
-// -------------------------
 router.get('/pacs', (_, res) => {
-  const data = {
-    cpu_usage: 92,
-    ram_usage: 87,
-    disk_usage: 94,
-    uptime: 98.4,
-    latency: 510,
-    incident_count: 3,
-    backup_status: "FAILED"
-  };
-
-  res.json({
-    ...data,
-    alerts: evaluateInfra(data)
-  });
-});
-
-// Health
-router.get('/health', (_, res) => {
-  res.json({ status: "ok", service: "Infrastructure" });
+  res.json(generateInfraData());
 });
 
 module.exports = router;

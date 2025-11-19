@@ -19,6 +19,7 @@ const email = require('./services/email');
 const cron = require('./services/cron');
 const webhook = require('./services/webhook');
 const costos = require('./services/costos');
+const ti = require('./services/ti');
 
 // --- Registrar rutas ---
 app.use('/his', his);
@@ -37,7 +38,7 @@ app.use('/email', email);
 app.use('/cron', cron);
 app.use('/webhook', webhook);
 app.use('/costos', costos);
-
+app.use('/ti', ti);
 
 // --- HEALTH Global ---
 app.get('/health', (_, res) => {

@@ -1,14 +1,13 @@
 const express = require('express');
 const router = express.Router();
 
+// --- Endpoint existente: /ti/policies ---
 router.get('/policies', (_, res) => {
   const randomBool = () => Math.random() < 0.85;
   const randomDate = (start = new Date(2025, 0, 1), end = new Date()) => {
     const date = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
     return date.toISOString().split('T')[0];
   };
-
-  // Función para asignar detalle solo si la política no se cumple
   const detalleIncumplimiento = (cumplimiento, msg) => cumplimiento ? "" : msg;
 
   const policies = [
@@ -19,7 +18,7 @@ router.get('/policies', (_, res) => {
       cumplimiento: randomBool(),
       ultima_revision: randomDate(),
       responsable: "Seguridad TI",
-      detalle_incumplimiento: "" 
+      detalle_incumplimiento: ""
     },
     {
       id: 2,
@@ -68,7 +67,7 @@ router.get('/policies', (_, res) => {
     }
   ];
 
-  // Asignar los detalles **solo si cumplimiento === false**
+  // Asignar detalles solo si no se cumple la política
   policies[0].detalle_incumplimiento = detalleIncumplimiento(policies[0].cumplimiento, "Contraseña no renovada a tiempo");
   policies[1].detalle_incumplimiento = detalleIncumplimiento(policies[1].cumplimiento, "Respaldo fallido detectado");
   policies[2].detalle_incumplimiento = detalleIncumplimiento(policies[2].cumplimiento, "Algunos sistemas no enviaron HL7");
@@ -77,6 +76,24 @@ router.get('/policies', (_, res) => {
   policies[5].detalle_incumplimiento = detalleIncumplimiento(policies[5].cumplimiento, "Acceso no autorizado detectado");
 
   res.json(policies);
+});
+
+// --- Nuevo endpoint: /ti/adoption ---
+router.get('/adoption', (_, res) => {
+  const adoptionData = {
+    last_update: "2025-11-18",
+    grupos: {
+      "Personal medico": { encuestas: 20, promedio_satisfaccion: 85, uso_sistema_critico: 90 },
+      "Administrativos": { encuestas: 15, promedio_satisfaccion: 78, uso_sistema_critico: 80 },
+      "Directivos": { encuestas: 5, promedio_satisfaccion: 95, uso_sistema_critico: 100 },
+      "Pacientes": { encuestas: 50, promedio_satisfaccion: 88, uso_sistema_critico: 70 },
+      "Familiares": { encuestas: 30, promedio_satisfaccion: 82, uso_sistema_critico: 65 },
+      "Estudiantes": { encuestas: 10, promedio_satisfaccion: 80, uso_sistema_critico: 75 },
+      "EPS": { encuestas: 3, promedio_satisfaccion: 90, uso_sistema_critico: 85 }
+    }
+  };
+
+  res.json(adoptionData);
 });
 
 module.exports = router;

@@ -31,7 +31,6 @@ function generateMissingControls() {
     "no existe política de retención de datos",
     "backups no documentados"
   ];
-
   const count = random(0, 3);
   const shuffled = controls.sort(() => 0.5 - Math.random());
   return shuffled.slice(0, count);
@@ -48,10 +47,8 @@ function generateNonConformities() {
     "No se ejecutó auditoría interna",
     "Proceso de backup incompleto"
   ];
-
   const count = random(1, 4);
   const list = [];
-
   for (let i = 1; i <= count; i++) {
     list.push({
       id: `NC-${String(i).padStart(2, "0")}`,
@@ -59,7 +56,6 @@ function generateNonConformities() {
       description: randomPick(descriptions)
     });
   }
-
   return list;
 }
 
@@ -75,11 +71,10 @@ router.get('/status', (_, res) => {
     dnhs: { compliance: random(90, 99), missing_controls: generateMissingControls(), last_audit: randomDate() }
   };
 
-  const nonConformities = generateNonConformities();
   const globalRisk = random(40, 90);
   const rows = [];
 
-  // Generar filas por cada norma
+  // Primero agregamos las normas
   Object.entries(lawsData).forEach(([norma, data]) => {
     rows.push({
       fecha: new Date().toISOString(),
@@ -96,20 +91,26 @@ router.get('/status', (_, res) => {
     });
   });
 
-  // Agregar filas para las no conformidades que no tienen norma específica
+  // Generamos las no conformidades y las asignamos a normas existentes
+  const nonConformities = generateNonConformities();
+  const normaKeys = Object.keys(lawsData);
+
   nonConformities.forEach(nc => {
+    const assignedNorma = randomPick(normaKeys);
+    const normaData = lawsData[assignedNorma];
+
     rows.push({
       fecha: new Date().toISOString(),
-      norma: null,
-      compliance_percent: null,
-      missing_controls_count: null,
-      last_audit: null,
+      norma: assignedNorma,
+      compliance_percent: normaData.compliance,
+      missing_controls_count: normaData.missing_controls.length,
+      last_audit: normaData.last_audit,
       non_conformity_id: nc.id,
       non_conformity_severity: nc.severity,
       non_conformity_description: nc.description,
       global_risk: globalRisk,
-      tiene_alerta: nc.severity === "high",
-      todo_bien: false
+      tiene_alerta: nc.severity === "high" || normaData.compliance < 85,
+      todo_bien: nc.severity !== "high" && normaData.compliance >= 85
     });
   });
 
@@ -127,7 +128,6 @@ router.get('/regulatory', (_, res) => {
     hce: randomPick(["Cumple", "Parcial", "No cumple"]),
     mspi: randomPick(["Cumple", "Parcial", "No cumple"])
   };
-
   res.json(regulatory);
 });
 

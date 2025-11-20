@@ -74,7 +74,7 @@ router.get('/status', (_, res) => {
   const globalRisk = random(40, 90);
   const rows = [];
 
-  // Primero agregamos las normas
+  // Agregar cumplimiento por norma
   Object.entries(lawsData).forEach(([norma, data]) => {
     rows.push({
       fecha: new Date().toISOString(),
@@ -91,13 +91,16 @@ router.get('/status', (_, res) => {
     });
   });
 
-  // Generamos las no conformidades y las asignamos a normas existentes
+  // Asignación rotativa de normas a no conformidades
   const nonConformities = generateNonConformities();
   const normaKeys = Object.keys(lawsData);
+  const shuffledNormas = [...normaKeys].sort(() => 0.5 - Math.random());
 
-  nonConformities.forEach(nc => {
-    const assignedNorma = randomPick(normaKeys);
+  nonConformities.forEach((nc, index) => {
+    const assignedNorma = shuffledNormas[index % shuffledNormas.length];
     const normaData = lawsData[assignedNorma];
+
+    if (!normaData) return; // Validación de seguridad
 
     rows.push({
       fecha: new Date().toISOString(),
@@ -110,41 +113,11 @@ router.get('/status', (_, res) => {
       non_conformity_description: nc.description,
       global_risk: globalRisk,
       tiene_alerta: nc.severity === "high" || normaData.compliance < 85,
-      todo_bien: nc.severity !== "high" && normaData.compliance >= 85
+      todo_bien: nc.severity !== "high" && normaData.compliance >= 85,
+      asignacion_aleatoria: true // opcional para trazabilidad
     });
   });
 
   res.json(rows);
 });
-
-// -------------------------------------------------------------
-// Endpoint simple regulatory estático
-// -------------------------------------------------------------
-
-router.get('/regulatory', (_, res) => {
-  const regulatory = {
-    ley_1581: randomPick(["Cumple", "Parcial", "No cumple"]),
-    decreto_333_2022: randomPick(["Cumple", "Parcial", "No cumple"]),
-    hce: randomPick(["Cumple", "Parcial", "No cumple"]),
-    mspi: randomPick(["Cumple", "Parcial", "No cumple"])
-  };
-  res.json(regulatory);
-});
-
-// -------------------------------------------------------------
-// Eventos (no cambia)
-// -------------------------------------------------------------
-
-router.post('/events/:type', (_, res) => {
-  res.json({ ok: true });
-});
-
-// -------------------------------------------------------------
-// Health
-// -------------------------------------------------------------
-
-router.get('/health', (_, res) => {
-  res.json({ status: 'ok', service: 'Audit' });
-});
-
 module.exports = router;

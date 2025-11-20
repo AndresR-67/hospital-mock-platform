@@ -35,7 +35,7 @@ function generateMissingControls() {
   return shuffled.slice(0, count);
 }
 
-function generateNonConformities(normaCount) {
+function generateNonConformities() {
   const severities = ["low", "medium", "high"];
   const descriptions = [
     "Acceso no autorizado detectado",
@@ -46,8 +46,9 @@ function generateNonConformities(normaCount) {
     "No se ejecutó auditoría interna",
     "Proceso de backup incompleto"
   ];
+  const count = random(1, 4);
   const list = [];
-  for (let i = 1; i <= normaCount; i++) {
+  for (let i = 1; i <= count; i++) {
     list.push({
       id: `NC-${String(i).padStart(2, "0")}`,
       severity: randomPick(severities),
@@ -61,40 +62,62 @@ function generateNonConformities(normaCount) {
 // Endpoint principal: cumplimiento normativo aleatorio
 // -------------------------------------------------------------
 router.get('/status', (_, res) => {
-  const lawsData = {
-    ley_1581: { compliance: random(85, 99), missing_controls: generateMissingControls(), last_audit: randomDate() },
-    iso_27001: { compliance: random(70, 95), missing_controls: generateMissingControls(), last_audit: randomDate() },
-    politica_seguridad_digital: { compliance: random(80, 95), missing_controls: generateMissingControls(), last_audit: randomDate() },
-    dnhs: { compliance: random(90, 99), missing_controls: generateMissingControls(), last_audit: randomDate() }
+  const auditStatus = {
+    laws: {
+      ley_1581: {
+        compliance: random(85, 99),
+        missing_controls: generateMissingControls(),
+        last_audit: randomDate()
+      },
+      iso_27001: {
+        compliance: random(70, 95),
+        missing_controls: generateMissingControls(),
+        last_audit: randomDate()
+      },
+      politica_seguridad_digital: {
+        compliance: random(80, 95),
+        missing_controls: generateMissingControls(),
+        last_audit: randomDate()
+      },
+      dnhs: {
+        compliance: random(90, 99),
+        missing_controls: generateMissingControls(),
+        last_audit: randomDate()
+      }
+    },
+    global_risk: random(40, 90),
+    non_conformities: generateNonConformities(),
+    last_review: randomDate()
   };
 
-  const globalRisk = random(40, 90);
-  const rows = [];
+  res.json(auditStatus);
+});
 
-  const normaKeys = Object.keys(lawsData);
-  const nonConformities = generateNonConformities(normaKeys.length);
+// -------------------------------------------------------------
+// Endpoint simple regulatory estático
+// -------------------------------------------------------------
+router.get('/regulatory', (_, res) => {
+  const regulatory = {
+    ley_1581: randomPick(["Cumple", "Parcial", "No cumple"]),
+    decreto_333_2022: randomPick(["Cumple", "Parcial", "No cumple"]),
+    hce: randomPick(["Cumple", "Parcial", "No cumple"]),
+    mspi: randomPick(["Cumple", "Parcial", "No cumple"])
+  };
+  res.json(regulatory);
+});
 
-  // Un solo registro por norma (cumplimiento + no conformidad)
-  normaKeys.forEach((norma, index) => {
-    const data = lawsData[norma];
-    const nc = nonConformities[index]; // una NC por norma
+// -------------------------------------------------------------
+// Eventos
+// -------------------------------------------------------------
+router.post('/events/:type', (_, res) => {
+  res.json({ ok: true });
+});
 
-    rows.push({
-      fecha: new Date().toISOString(),
-      norma,
-      compliance_percent: data.compliance,
-      missing_controls_count: data.missing_controls.length,
-      last_audit: data.last_audit,
-      non_conformity_id: nc.id,
-      non_conformity_severity: nc.severity,
-      non_conformity_description: nc.description,
-      global_risk: globalRisk,
-      tiene_alerta: nc.severity === "high" || data.compliance < 85,
-      todo_bien: nc.severity !== "high" && data.compliance >= 85
-    });
-  });
-
-  res.json(rows);
+// -------------------------------------------------------------
+// Health
+// -------------------------------------------------------------
+router.get('/health', (_, res) => {
+  res.json({ status: 'ok', service: 'Audit' });
 });
 
 module.exports = router;

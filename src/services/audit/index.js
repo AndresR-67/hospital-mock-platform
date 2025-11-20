@@ -34,7 +34,6 @@ function generateMissingControls() {
 
   const count = random(0, 3);
   const shuffled = controls.sort(() => 0.5 - Math.random());
-
   return shuffled.slice(0, count);
 }
 
@@ -69,39 +68,56 @@ function generateNonConformities() {
 // -------------------------------------------------------------
 
 router.get('/status', (_, res) => {
-  const auditStatus = {
-    laws: {
-      ley_1581: {
-        compliance: random(85, 99),
-        missing_controls: generateMissingControls(),
-        last_audit: randomDate()
-      },
-      iso_27001: {
-        compliance: random(70, 95),
-        missing_controls: generateMissingControls(),
-        last_audit: randomDate()
-      },
-      politica_seguridad_digital: {
-        compliance: random(80, 95),
-        missing_controls: generateMissingControls(),
-        last_audit: randomDate()
-      },
-      dnhs: {
-        compliance: random(90, 99),
-        missing_controls: generateMissingControls(),
-        last_audit: randomDate()
-      }
-    },
-    global_risk: random(40, 90),
-    non_conformities: generateNonConformities(),
-    last_review: randomDate()
+  const lawsData = {
+    ley_1581: { compliance: random(85, 99), missing_controls: generateMissingControls(), last_audit: randomDate() },
+    iso_27001: { compliance: random(70, 95), missing_controls: generateMissingControls(), last_audit: randomDate() },
+    politica_seguridad_digital: { compliance: random(80, 95), missing_controls: generateMissingControls(), last_audit: randomDate() },
+    dnhs: { compliance: random(90, 99), missing_controls: generateMissingControls(), last_audit: randomDate() }
   };
 
-  res.json(auditStatus);
+  const nonConformities = generateNonConformities();
+  const globalRisk = random(40, 90);
+  const rows = [];
+
+  // Generar filas por cada norma
+  Object.entries(lawsData).forEach(([norma, data]) => {
+    rows.push({
+      fecha: new Date().toISOString(),
+      norma,
+      compliance_percent: data.compliance,
+      missing_controls_count: data.missing_controls.length,
+      last_audit: data.last_audit,
+      non_conformity_id: null,
+      non_conformity_severity: null,
+      non_conformity_description: null,
+      global_risk: globalRisk,
+      tiene_alerta: data.compliance < 85,
+      todo_bien: data.compliance >= 85
+    });
+  });
+
+  // Agregar filas para las no conformidades que no tienen norma específica
+  nonConformities.forEach(nc => {
+    rows.push({
+      fecha: new Date().toISOString(),
+      norma: null,
+      compliance_percent: null,
+      missing_controls_count: null,
+      last_audit: null,
+      non_conformity_id: nc.id,
+      non_conformity_severity: nc.severity,
+      non_conformity_description: nc.description,
+      global_risk: globalRisk,
+      tiene_alerta: nc.severity === "high",
+      todo_bien: false
+    });
+  });
+
+  res.json(rows);
 });
 
 // -------------------------------------------------------------
-// Endpoint simple regulatory estático (si aún lo necesitas)
+// Endpoint simple regulatory estático
 // -------------------------------------------------------------
 
 router.get('/regulatory', (_, res) => {
